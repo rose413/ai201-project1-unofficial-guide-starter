@@ -73,7 +73,7 @@ While `all-MiniLM-L6-v2` might have slightly lower accuracy on complex semantic 
 
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | Who can I contact at SCU to seek advice on off-campus housing| offcampusliving@scu.edu |
+| 1 | Who can I contact at SCU to seek advice on off-campus housing? | offcampusliving@scu.edu |
 | 2 | What are some local apartments that are closest to SCU? | Domicilio Apts, The Benton, Park Central Apts, Normandy Park Apts, Timberleaf Apts |
 | 3 | What apartment complex on El Camino Real is closest to SCU? | Domicilio Apts (0.2 miles) |
 | 4 | How far in advance does SCU recommend starting your housing search? | 9-14 months |
