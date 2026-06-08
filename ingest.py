@@ -36,8 +36,8 @@ from test_scraper import (
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-CHUNK_SIZE = 500       # tokens
-CHUNK_OVERLAP = 50     # tokens
+CHUNK_SIZE = 230       # tokens  (kept under all-MiniLM-L6-v2's 256-token max_seq_length)
+CHUNK_OVERLAP = 20     # tokens  (max possible chunk = 230 + 20 = 250, safely under 256)
 TOKENIZER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 # Source IDs to skip entirely (none currently)
@@ -54,6 +54,27 @@ SECTION_DELIMITERS = {
 EXCEL_TITLE_ROW_FILES = {
     "data/Local-Apartment-Listings---Santa-Clara-County (2).xlsx",
 }
+
+# Paths for portal-style structured text files whose sections need field reordering.
+# The Description field in portal listings is long enough to push Address and Rules
+# past the embedding model's 256-token context window. Reordering puts the short,
+# high-signal fields (Address, Rules, Lease Term) before the free-text description.
+REORDER_FIELD_PATHS = {"data/scu_portal_listings.txt"}
+
+# Desired field order: short metadata fields first, long Description last.
+_PORTAL_FIELD_PRIORITY = [
+    "Title:",
+    "Address:",
+    "Distance from SCU:",
+    "Lease Term:",
+    "Rules:",
+    "Parking:",
+    "Contact:",
+    "Type:",
+    "Configuration:",
+    "Availability:",
+    "Description:",   # longest field; placed last so it doesn't displace the fields above
+]
 
 # ── Tokenizer (loaded once at module import) ──────────────────────────────────
 
@@ -140,6 +161,34 @@ def _recursive_split(text: str, separators: list[str] | None = None) -> list[str
 
 # ── Per-type chunkers ─────────────────────────────────────────────────────────
 
+def _reorder_listing_fields(section: str) -> str:
+    """
+    Reorder the lines in a structured portal listing so that short, high-signal
+    fields (Address, Rules, Lease Term) appear before the free-text Description.
+
+    Why this matters: all-MiniLM-L6-v2 has a 256-token context window.  A portal
+    listing with a long Description can push Address and Rules past that limit,
+    meaning those fields never contribute to the embedding.  By placing them first
+    they are always within the first ~120 tokens and are always embedded.
+    """
+    lines = [ln for ln in section.splitlines() if ln.strip()]
+    priority: list[str] = []
+    remainder: list[str] = []
+    for line in lines:
+        if any(line.startswith(prefix) for prefix in _PORTAL_FIELD_PRIORITY):
+            priority.append(line)
+        else:
+            remainder.append(line)
+    # Sort priority lines according to _PORTAL_FIELD_PRIORITY order
+    def _rank(line: str) -> int:
+        for i, prefix in enumerate(_PORTAL_FIELD_PRIORITY):
+            if line.startswith(prefix):
+                return i
+        return len(_PORTAL_FIELD_PRIORITY)
+    priority.sort(key=_rank)
+    return "\n".join(priority + remainder)
+
+
 def _chunk_text(raw_text: str, source_name: str, path: str | None = None) -> list[dict]:
     """
     Clean and chunk a block of plain text.
@@ -147,8 +196,12 @@ def _chunk_text(raw_text: str, source_name: str, path: str | None = None) -> lis
     If *path* matches a key in SECTION_DELIMITERS the text is first split on
     that delimiter so each logical section is chunked independently (prevents
     apartment listings or Facebook posts bleeding into one another).
+
+    If *path* is in REORDER_FIELD_PATHS, each section's fields are reordered
+    before chunking so that Address and Rules appear before the Description.
     """
     delimiter = SECTION_DELIMITERS.get(path or "") if path else None
+    reorder = path in REORDER_FIELD_PATHS if path else False
 
     if delimiter:
         sections = raw_text.split(delimiter)
@@ -157,6 +210,8 @@ def _chunk_text(raw_text: str, source_name: str, path: str | None = None) -> lis
 
     chunks: list[dict] = []
     for section in sections:
+        if reorder:
+            section = _reorder_listing_fields(section)
         section = clean_text(section)
         if not section:
             continue
@@ -184,11 +239,14 @@ def _chunk_excel(path: str, source_name: str, header: int = 0) -> list[dict]:
             if str(val).strip()
         ]
         if parts:
-            chunks.append({
-                "content": " | ".join(parts),
-                "source":  source_name,
-                "type":    "spreadsheet",
-            })
+            content = " | ".join(parts)
+            # Guard against oversized rows (e.g. long free-text columns) that
+            # would exceed the embedding model's 256-token max_seq_length.
+            if _token_len(content) > CHUNK_SIZE:
+                for piece in _recursive_split(content):
+                    chunks.append({"content": piece, "source": source_name, "type": "spreadsheet"})
+            else:
+                chunks.append({"content": content, "source": source_name, "type": "spreadsheet"})
     return chunks
 
 

@@ -144,14 +144,25 @@ def is_bot_blocked(text: str) -> bool:
 # ---------------------------------------------------------------------------
 
 def scrape_html(url: str) -> tuple[bool, str]:
-    """Fetch an HTML page and return visible text."""
+    """Fetch an HTML page and return visible text from the main content area."""
     resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
-    # Remove script / style noise
+    # Remove script / style / navigation noise before extracting text
     for tag in soup(["script", "style", "noscript", "header", "footer", "nav"]):
         tag.decompose()
-    text = soup.get_text(separator=" ", strip=True)
+    # Prefer the <main> landmark or common content containers over the full page.
+    # This strips breadcrumb nav, sidebar links, and repeated heading text that
+    # would otherwise pollute the embedding of the actual page content.
+    content_node = (
+        soup.find("main")
+        or soup.find(id="main-content")
+        or soup.find(id="content")
+        or soup.find("article")
+        or soup.body
+        or soup
+    )
+    text = content_node.get_text(separator=" ", strip=True)
     # Collapse whitespace
     text = " ".join(text.split())
     if len(text) < 50:
