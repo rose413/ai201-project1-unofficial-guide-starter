@@ -128,6 +128,76 @@ While `all-MiniLM-L6-v2` might have slightly lower accuracy on complex semantic 
 
 **Milestone 3 — Ingestion and chunking:**
 
+After generating the ingestion and chunking code, it created a total of 93 chunks.
+
+[OK]      Source 1: SCU Off-Campus Housing Information -> 1 text chunks
+[OK]      Source 2: Off-Campus Landlord Contacts (PDF) -> 1 text chunks
+[OK]      Source 3: Local Apartment Listings (local file) -> 34 row chunks
+[OK]      Source 4: Rental Listings Portal -> 10 text chunks
+[OK]      Source 5: Roommate Finder Responses -> 7 row chunks
+[OK]      Source 6: Sublease Listing Responses -> 13 row chunks
+[OK]      Source 7: Student Sublet -> 1 text chunks
+[OK]      Source 8: Apartments.com – Santa Clara -> 18 text chunks
+[OK]      Source 9: Reddit – SCU Off-Campus Apartment Recommendation -> 2 text chunks
+[OK]      Source 10: SCU Facebook Housing Group -> 6 text chunks
+
+Total chunks: 93
+
+Source                                         Chunks  Type
+--------------------------------------------------------------
+SCU Off-Campus Housing Information                  1  text
+Off-Campus Landlord Contacts (PDF)                  1  text
+Local Apartment Listings (local file)              34  spreadsheet
+Rental Listings Portal                             10  text
+Roommate Finder Responses                           7  spreadsheet
+Sublease Listing Responses                         13  spreadsheet
+Student Sublet                                      1  text
+Apartments.com – Santa Clara                       18  text
+Reddit – SCU Off-Campus Apartment Recommendation       2  text
+SCU Facebook Housing Group                          6  text
+
+-- 5 Random Chunks (quality check) -----------------------------------
+
+[chunk_id=17 | tokens=134 | type=spreadsheet | OK]
+source: Local Apartment Listings (local file)
+Apartment Name: Old Orchard Apts | Address: 2200 Monroe St., Santa Clara, CA 95050 | Distance from SCU: 2.4 miles | Website: https://www.theoldorchardapts.com/ | Monthly Rent: Contact for pricing | Security Deposit: Contact for details | Application Fee: Not listed | Move-In Fees: Not listed | Background Check Fee: Not listed | Parking: Not listed | Pet Policy: Pets allowed (deposit required) | Cosigner / Guarantor: Not listed | Lease Length Options: Contact for lease terms | Utilities Included: ELECTRIC VEHICLE STATIONS Charge your EV while you sleep
+----------------------------------------------------------------------
+
+[chunk_id=81 | tokens=70 | type=text | OK]
+source: Apartments.com – Santa Clara
+Summerwood Apartments
+Address: 444 Saratoga Ave, Santa Clara, CA 95050
+Pricing: 1 Bed: $3,200+ | 2 Beds: $3,615+
+Amenities: Pets Allowed, Fitness Center, Pool, Dishwasher, Kitchen, In Unit Washer & Dryer
+Contact: (669) 201-8578
+----------------------------------------------------------------------
+
+[chunk_id=42 | tokens=254 | type=text | OK]
+source: Rental Listings Portal
+Title: $1300/mo - SUMMER SUBLEASE - 1153 Lafayette St.
+Type: House - Share (renting a room or part of a unit)
+Address: 1153 Lafayette Street, Santa Clara 95053
+Configuration: 1 bedroom | 1.5 bath | Up to 1 person
+Description: Looking for a summer subletter to share a double bedroom in 1153 Lafayette Street from July to September. About the House: - 3 bed / 1.5 bath home - Bright living spaces + full kitchen - Large backyard and patio - In-unit laundry and street parking available The Room: - Shared bedroom with one other female - Fully furnished Housemates: - 3 other females (college students / young professionals) - Friendly, clean, and social but respectful of space Location Perks: - Walking distance to Santa Clara University - Easy access to Caltrain, grocery stores, and restaurants
+Availability: July 13, 2026 until September 13, 2026
+Distance from SCU: 0.12 miles
+Lease Term: Summer Quarter
+Rules: Utilities Included: No | Smoking Allowed: No | Pets Allowed: No | Accessible: No
+Parking: Street Parking
+Contact: Jane Doe | Phone: 555-010-0001 | Email: user1@example.com
+----------------------------------------------------------------------
+
+[chunk_id=49 | tokens=226 | type=spreadsheet | OK]
+source: Roommate Finder Responses
+Timestamp: 2026-06-01 10:56:11.160000 | Email Address: user1@example.com | Name:: Jane Doe | SCU Email:: user1@example.com | Phone Number (Optional):: 5550100001.0 | Preferred Contact:: Text | Academic Standing for 2026-2027:: Junior | Please indicate if any apply to you:: Transfer Student | Roommate Gender Preference:: Gender-Inclusive | What best describes your current housing situation?: I need both housing and roommates | Please provide a description of what you are looking for (i.e. Lease start/end dates, preferred monthly rent, single or shared room request, any other details).: Hello, my name is Matilde and I am transferring to Santa Clara for the fall term 2026. I am moving in late August and I am looking for a private room or roommates  to share a place with. My budget is approximately $1000. (I don’t have a scu email yet!)
+----------------------------------------------------------------------
+
+[chunk_id=86 | tokens=291 | type=text | OK]
+source: Reddit – SCU Off-Campus Apartment Recommendation
+[COMMENT] There are a few places on homestead before San Tomas. I’m my time living in SC and moving to keep with the cheaper side of renting (because a shared room is something I would never do) Zillow has always had good leads, however on a day off, I would suggest driving around time (or walking close to the university) and calling the numbers posted with an apartment for rent. However, rent is outrageous now. Average studio is about $1,600/$1,800 but you can find something not too super fancy for mayyyyyyyyybe $1,200. But even shared rooms are going for about $1,000. I live next to the Pruneyard in Campbell and I’m paying $2,500 just for rent.
+[COMMENT] Insanely expensive around campus. Watch out for scammers. New housing options are around the corner in about 6 months. Late winter 2020/spring 2020. I know, doesn't help for incoming new students. There will be tons of housing in San Jose proper on Coleman Ave. There is a tunnel that runs under the tracks. You'll be in a little competition with the new Google employees coming to town but these will loosen the availability of units in the surrounding area. Hopefully a price drop. Sub $2000 for a 1br. Sub $2500 for 2br. Gets worse form there.
+----------------------------------------------------------------------
+
 **Milestone 4 — Embedding and retrieval:**
 
 **Milestone 5 — Generation and interface:**
